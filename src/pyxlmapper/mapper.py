@@ -1,4 +1,5 @@
 from functools import cached_property
+from itertools import chain
 import sys
 from typing import (
     ClassVar,
@@ -14,6 +15,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils import get_column_letter
 from dataclasses import dataclass, field
 
+from pyxlmapper.formatters import PrettyFormatter
 from pyxlmapper.util import (
     camel_to_snake,
     class_name_from_str,
@@ -145,7 +147,7 @@ class MapperNode:
     @cached_property
     def abs_pos(self) -> Tuple[int, int]:
         if self.parent is None:
-            return (1, 1)
+            return (0, 1)
 
         pos = self.parent.children.index(self)
         if pos > 0:
@@ -167,6 +169,10 @@ class MapperNode:
     @property
     def is_root(self):
         return self.parent is None
+
+    @property
+    def is_leaf(self):
+        return len(self.children) == 0
 
     @property
     def last(self):
@@ -198,6 +204,8 @@ class MapperNode:
     @property
     def coordinate(self):
         col = get_column_letter(self.abs_pos[1])
+        if self.is_root:
+            return "N/A"
         return f"{col}{self.abs_pos[0]}"
 
     def add_child(self, child: Self):
@@ -212,60 +220,28 @@ class MapperNode:
             node = node.parent
         return list(reversed(path))
 
-    def pretty(self):
-        return self._pretty(0)
-
-    def _pretty(self, level: int):
-        padding = "  " * level
-        header = f"{padding}{self}"
-        details = ""
-        if self.config.offset != (0, 0):
-            details = f"{padding}  ++ offset={self.config.offset}\n"
-        children = "".join([c._pretty(level + 1) for c in self.children])
-        return f"{header}\n{details}{children}"
-
     def get_leaves(self):
         return self._get_leaves([])
 
     def _get_leaves(self, leaves: List[Self]):
-        if len(self.children) == 0:
+        if self.is_leaf:
             return leaves + [self]
         else:
             for child in self.children:
                 leaves = child._get_leaves(leaves)
         return leaves
 
-    def flat_repr(self):
-        nodes = self.get_leaves()
-        return "\n".join([f"{d.coordinate} -> {d.qualified_name}" for d in nodes])
-
-    def to_python(self):
-        return self._to_python(0)
-
-    def _to_python(self, level):
-        padding = "  " * level
-        parents = f"(SpreadsheetMapper)" if level == 0 else ""
-        class_def = f"{padding}class {self.config.raw_name}{parents}:"
-        details = ""
-
-        children = "".join([c._to_python(level + 1) for c in self.children])
-
-        for field in self.config._overrides:
-            value = getattr(self.config, field)
-            str_repr = f'"{value}"' if type(value) == str else value
-            details += f"{padding}  {field} = {str_repr}\n"
-
-        if len(self.config._overrides) == 0 and len(self.children) == 0:
-            details += f"{padding}  pass\n"
-
-        line_skip = "\n" if details != "" else ""
-
-        return f"{class_def}\n{details}{line_skip}{children}"
+    def __iter__(self):
+        for d in chain(*map(iter, self.children)):
+            yield d
+        yield self
 
     def __repr__(self) -> str:
-        return self.pretty()
+        return str(PrettyFormatter(self))
 
     def __str__(self) -> str:
+        if self.is_root:
+            return f"Node<{self.config.raw_name} ({self.coordinate}) -- ROOT>"
         return f"Node<{self.config.raw_name} ({self.coordinate}) {self.config.input_name} -> {self.config.output_name}>"
 
 
