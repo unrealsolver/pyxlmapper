@@ -1,40 +1,54 @@
 import openpyxl
-import json
 import argparse
 
 from pyxlmapper import infer
 
 parser = argparse.ArgumentParser(
-    prog="pyxlmapper", description="Parser and data mapper for excel spreadsheet"
+    prog="pyxlmapper",
+    description="Infers and generates mapper class for you. You can use thet class later to map the data",
 )
 
-parser.add_argument("filename")
-parser.add_argument("-s", "--sheet")
-parser.add_argument("-p", "--parse")
-parser.add_argument("-i", "--infer")
-parser.add_argument("-t", "--type")  # json, jsonl
-parser.add_argument("-o", "--out")
+parser.add_argument("filename", help="Path to xlsx file")
+parser.add_argument(
+    "-s", "--sheet", required=True, help="Name of the worksheet (tab name in xlsx)"
+)
+parser.add_argument("--height", required=True, type=int, help="number")
+parser.add_argument("--width", required=False, help="number or auto")
+parser.add_argument(
+    "--name", required=False, help="Name of the mapper class (root name)"
+)
+parser.add_argument(
+    "--v-offset",
+    required=False,
+    type=int,
+    default=0,
+    help="Vertical offset before reading header",
+)
+parser.add_argument(
+    "--h-offset",
+    required=False,
+    type=int,
+    default=0,
+    help="Horizontal offset before reading header",
+)
+parser.add_argument(
+    "-t", "--type", required=False, choices=["python", "ts"], default="python"
+)
+parser.add_argument("-o", "--out", required=False, help="Output file")
 
 args = parser.parse_args()
 
-wb = openpyxl.open("data.xlsx", data_only=True)
-ws = wb["B650(E)"]
-# read_header(ws, height=3, offset=(1, 0))
-mapper = infer(ws, height=4, offset=(1, 0), name="B650EMapper")
-# print(mapper.root.pretty())
-# print(n.root.flat_repr())
+wb = openpyxl.open(args.filename, data_only=True)
+ws = wb[args.sheet]
 
-# mapper = B650EMapper()
-# print(mapper.root.pretty())
-# print(mapper.root.flat_repr())
-# print(mapper.root.to_python())
+offset = (args.v_offset, args.h_offset)
 
-print(len(mapper.root.get_leaves()))
+mapper = infer(ws, height=args.height, offset=offset, name=args.name or "Mapper")
 
-docs = []
+output = mapper.root.to_python()
 
-for obj in mapper.map_rows(ws, start_at=7):
-    docs.append(obj)
-
-with open("mapped.json", "w") as fd:
-    json.dump(docs, fd)
+if args.out is not None:
+    with open(args.out, "w") as fd:
+        fd.write(output)
+else:
+    print(output)
