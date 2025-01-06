@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument("filename", help="Path to xlsx file")
 parser.add_argument(
-    "-s", "--sheet", required=True, help="Name of the worksheet (tab name in xlsx)"
+    "-s", "--sheet", required=False, help="Name of the worksheet (tab name in xlsx)"
 )
 parser.add_argument("--height", required=True, type=int, help="number")
 parser.add_argument("--width", required=False, help="number or auto")
@@ -41,7 +41,14 @@ parser.add_argument("-o", "--out", required=False, help="Output file")
 args = parser.parse_args()
 
 wb = openpyxl.open(args.filename, data_only=True)
-ws = wb[args.sheet]
+
+if args.sheet is not None:
+    ws = wb[args.sheet]
+elif len(wb.sheetnames) == 1:
+    ws = wb.active
+else:
+    raise ValueError
+
 
 offset = (args.v_offset, args.h_offset)
 

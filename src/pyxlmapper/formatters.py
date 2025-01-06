@@ -94,7 +94,7 @@ class TypescriptFormatter(Formatter, StyledCode):
 
         # TODO move this aliases thing to a separate method
         # Get all type names in root -> leaf order. Create aliases for duplicates
-        for node in reversed(list(filter(lambda d: not d.is_leaf, self.tree))):
+        for node in filter(lambda d: not d.is_leaf, self.tree):
             typename = class_name_from_str(node.config.raw_name)
             if typename not in aliases.values():
                 # Add type name normally
@@ -110,7 +110,8 @@ class TypescriptFormatter(Formatter, StyledCode):
             alias = parent_alias + typename
             aliases[node.qualified_name] = alias
 
-        for node in filter(lambda d: not d.is_leaf, self.tree):
+        # Going in reversed order here
+        for node in reversed(list(filter(lambda d: not d.is_leaf, self.tree))):
             typename = aliases[node.qualified_name]
             typedef = f"export type {typename} = {{\n"
 

@@ -56,17 +56,17 @@ def test_flat_formatter(mapper, lines):
             BasicMapper,
             [
                 "Node<BasicMapper (N/A) -- ROOT>",
-                "  Node<ChildOne (A1) ChildOne -> child_one>",
-                "  Node<ChildTwo (B1) ChildTwo -> child_two>",
+                "  Node<ChildOne (A1) 'ChildOne' -> 'child_one'>",
+                "  Node<ChildTwo (B1) 'ChildTwo' -> 'child_two'>",
             ],
         ),
         (
             BasicNestedMapper,
             [
                 "Node<BasicNestedMapper (N/A) -- ROOT>",
-                "  Node<Parent (A1) Parent -> parent>",
-                "    Node<ChildOne (A2) ChildOne -> child_one>",
-                "    Node<ChildTwo (B2) ChildTwo -> child_two>",
+                "  Node<Parent (A1) 'Parent' -> 'parent'>",
+                "    Node<ChildOne (A2) 'ChildOne' -> 'child_one'>",
+                "    Node<ChildTwo (B2) 'ChildTwo' -> 'child_two'>",
             ],
         ),
     ),
