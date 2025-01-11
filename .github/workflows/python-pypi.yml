@@ -29,6 +29,16 @@ jobs:
         name: python-package-distributions
         path: dist/
 
+  test-ref:
+    name: test ref
+    runs_on: ubuntu-latest
+    env:
+      REF: ${{ github.ref }}
+    steps:
+      - name: run
+        run:
+          echo Ref is $REF
+
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
