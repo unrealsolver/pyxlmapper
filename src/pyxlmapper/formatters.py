@@ -119,7 +119,7 @@ class TypescriptFormatter(Formatter, StyledCode):
                 if "input_name" in child.config._overrides:
                     typedef += f"{self.pad(1)}/** {child.config.input_name} */"
                 child_type = (
-                    "unknown" if child.is_leaf else aliases[child.qualified_name]
+                    "string" if child.is_leaf else aliases[child.qualified_name]
                 )
                 typedef += f"{self.pad(1)}{child.config.output_name}: {child_type};\n"
 
