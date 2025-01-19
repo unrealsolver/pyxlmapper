@@ -116,6 +116,8 @@ class TypescriptFormatter(Formatter, StyledCode):
             typedef = f"export type {typename} = {{\n"
 
             for child in node.children:
+                if "input_name" in child.config._overrides:
+                    typedef += f"{self.pad(1)}/** {child.config.input_name} */"
                 child_type = (
                     "unknown" if child.is_leaf else aliases[child.qualified_name]
                 )

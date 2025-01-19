@@ -18,6 +18,18 @@ class BasicMapper(SpreadsheetMapper):
         pass
 
 
+# The most basic mapper
+class BasicNestedWithDifferentInputNameMapper(SpreadsheetMapper):
+    class ChildOne:
+        input_name = "c1"
+
+    class ChildTwo:
+        input_name = "c2"
+
+        class SubChild:
+            input_name = "sc"
+
+
 # The most basic nested mapper
 class BasicNestedMapper(SpreadsheetMapper):
     class Parent:
@@ -155,6 +167,19 @@ def test_mapper_formatter(mapper, lines):
                 "",
                 "export type NestedDuplicatedMapper = {",
                 "  parent: Parent;",
+                "}",
+            ],
+        ),
+        (
+            BasicNestedWithDifferentInputNameMapper,
+            [
+                "export type ChildTwo = {",
+                "  /** sc */" "  sub_child: unknown;",
+                "}",
+                "",
+                "export type BasicNestedWithDifferentInputNameMapper = {",
+                "  /** c1 */" "  child_one: unknown;",
+                "  /** c2 */" "  child_two: ChildTwo;",
                 "}",
             ],
         ),
