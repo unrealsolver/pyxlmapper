@@ -37,6 +37,7 @@ Or this:
 ```
 
 # Installation
+WARNING: `PyPI` has no package yet. Name clame is pending: https://github.com/pypi/support/issues/5471
 ```sh
 pip install pyxlmapper
 ```
